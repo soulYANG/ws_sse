@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { authOptions } from '@/lib/auth'
-
-const prisma = new PrismaClient()
 
 export async function POST(req: Request) {
   try {
@@ -18,6 +16,13 @@ export async function POST(req: Request) {
 
     const { message } = await req.json()
 
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return NextResponse.json(
+        { error: '消息不能为空' },
+        { status: 400 }
+      )
+    }
+
     // 保存用户消息
     const user = await prisma.user.findUnique({
       where: { email: session.user.email }
@@ -30,9 +35,9 @@ export async function POST(req: Request) {
       )
     }
 
-    await prisma.message.create({
+    const userMessage = await prisma.message.create({
       data: {
-        content: message,
+        content: message.trim(),
         role: 'user',
         userId: user.id
       }
@@ -42,7 +47,7 @@ export async function POST(req: Request) {
     const aiResponse = "这是一个模拟的 AI 响应"
 
     // 保存 AI 响应
-    await prisma.message.create({
+    const assistantMessage = await prisma.message.create({
       data: {
         content: aiResponse,
         role: 'assistant',
@@ -50,7 +55,11 @@ export async function POST(req: Request) {
       }
     })
 
-    return NextResponse.json({ response: aiResponse })
+    return NextResponse.json({
+      response: aiResponse,
+      userMessage: userMessage,
+      assistantMessage: assistantMessage
+    })
   } catch (error) {
     console.error('Chat API error:', error)
     return NextResponse.json(

@@ -1,28 +1,48 @@
-import Link from 'next/link'
+/**
+ * 主页组件
+ * 应用的首页，包含聊天界面
+ */
+'use client'
 
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+import MessageInput from '@/components/MessageInput'
+import ChatMessage from '@/components/ChatMessage'
+
+// 主页组件
 export default function Home() {
+  // 获取会话状态
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  
+  // 未认证用户重定向到登录页
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login')
+    }
+  }, [status, router])
+  
+  // 加载状态显示
+  if (status === 'loading') {
+    return <div className="flex justify-center items-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+    </div>
+  }
+  
+  // 已认证用户显示聊天界面
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1 className="text-4xl font-bold mb-8">欢迎使用 AI 聊天应用</h1>
+    <div className="max-w-4xl mx-auto p-4">
       <div className="space-y-4">
-        <Link 
-          href="/chat" 
-          className="block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          开始聊天
-        </Link>
-        <Link 
-          href="/login" 
-          className="block px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-        >
-          登录
-        </Link>
-        <Link 
-          href="/register" 
-          className="block px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-        >
-          注册账户
-        </Link>
+        {/* 聊天消息列表 */}
+        <div className="space-y-4 mb-4">
+          {/* TODO: 添加消息列表 */}
+        </div>
+        
+        {/* 消息输入框 */}
+        <MessageInput onSendMessage={(message) => {
+          console.log('发送消息:', message)
+        }} />
       </div>
     </div>
   )

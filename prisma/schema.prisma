@@ -22,11 +22,11 @@ model User {
 
 model Message {
   id        String   @id @default(cuid())
-  content   String   @db.Text
-  role      String   // 'user' or 'assistant'
+  content   String
+  role      String
   createdAt DateTime @default(now())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
-} 
+}
